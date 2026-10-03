@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identity Card - Islam Shokri Elsaid</title>
+  
+  <style>
+    /* --------------------------------------------------------------------------
+       1. CSS CUSTOM VARIABLES (All key design tokens in one central place)
+       -------------------------------------------------------------------------- */
+    :root {
+      /* Physical & Aspect Dimensions (Standard ID-1 format: 85.6mm x 54mm) */
+      --card-width-mm: 85.6mm;
+      --card-height-mm: 54mm;
+      --card-aspect-ratio: 1.585185;
+      --card-radius: 3.18mm;
+      
+      /* Base Metallic Palette */
+      --color-metallic-dark: #0d0e11;
+      --color-metallic-mid: #181a20;
+      --color-metallic-light: #282b35;
+      
+      /* Gold & Typography Colors */
+      --color-gold-primary: #dfb253;
+      --color-gold-light: #fbeea9;
+      --color-gold-dark: #9c7524;
+      --color-text-white: #ffffff;
+      --color-text-subtle: #9ca3af;
+      
+      /* Accent & Interactive Colors */
+      --color-accent-green: #10b981;
+      --color-accent-green-hover: #059669;
+      --color-social-disabled: #374151;
+      --color-focus-ring: #10b981;
+
+      /* Visual Depth Effects */
+      --shadow-card-ambient: 0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 15px rgba(223, 178, 83, 0.15);
+      --card-border-edge: 1px solid rgba(223, 178, 83, 0.35);
+    }
+
+    /* --------------------------------------------------------------------------
+       2. GLOBAL RESET & SCREEN LAYOUT
+       -------------------------------------------------------------------------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: #050507;
+      color: var(--color-text-white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      overflow-x: hidden;
+      perspective: 1000px;
+    }
+
+    .app-viewport {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .app-header {
+      text-align: center;
+    }
+
+    .app-title {
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--color-gold-primary);
+      font-weight: 700;
+    }
+
+    /* --------------------------------------------------------------------------
+       3. METALLIC CARD WRAPPER & REALISTIC SURFACE STYLING
+       -------------------------------------------------------------------------- */
+    .card-wrapper {
+      position: relative;
+      width: min(85.6mm * 1.6, 92vw);
+      height: calc(min(85.6mm * 1.6, 92vw) / var(--card-aspect-ratio));
+      max-width: 500px;
+      max-height: calc(500px / var(--card-aspect-ratio));
+      perspective: 1000px;
+      transform-style: preserve-3d;
+    }
+
+    .id-card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: var(--card-radius);
+      background: linear-gradient(
+        135deg,
+        var(--color-metallic-dark) 0%,
+        var(--color-metallic-mid) 40%,
+        var(--color-metallic-light) 50%,
+        var(--color-metallic-mid) 60%,
+        var(--color-metallic-dark) 100%
+      );
+      box-shadow: var(--shadow-card-ambient);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 38% 62%;
+      padding: 4.5% 5%;
+      border: var(--card-border-edge);
+      box-shadow: 
+        inset 1px 1px 1px rgba(255, 255, 255, 0.2),
+        inset -1px -1px 1px rgba(0, 0, 0, 0.9),
+        0 20px 40px rgba(0, 0, 0, 0.8);
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    /* Fine brushed metallic texture overlay */
+    .id-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.012) 0px,
+        rgba(255, 255, 255, 0.012) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Dynamic glare light sheen overlay */
+    .card-sheen {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at 50% 0%,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0) 70%
+      );
+      pointer-events: none;
+      z-index: 2;
+      mix-blend-mode: overlay;
+      transition: background 0.1s ease;
+    }
+
+    /* Green top edge accent stripe */
+    .accent-stripe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3.5px;
+      background: linear-gradient(90deg, var(--color-gold-primary), var(--color-accent-green), var(--color-gold-primary));
+      z-index: 3;
+    }
+
+    /* --------------------------------------------------------------------------
+       4. LEFT COLUMN: PROFILE PHOTO & PERSONAL IDENTIFICATION
+       -------------------------------------------------------------------------- */
+    .card-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 3;
+      padding-right: 6%;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Photo container with rounded square cropping */
+    .photo-frame {
+      width: 78%;
+      aspect-ratio: 1;
+      border-radius: 16%;
+      overflow: hidden;
+      background: var(--color-metallic-dark);
+      border: 1.5px solid var(--color-gold-primary);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .profile-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Initials fallback circle when photo is missing or fails */
+    .initials-fallback {
+      display: none;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--color-gold-dark), var(--color-metallic-dark));
+      color: var(--color-gold-light);
+      font-weight: 800;
+      font-size: clamp(1rem, 3.5vw, 1.4rem);
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 1px;
+    }
+
+    .personal-meta {
+      margin-top: auto;
+      width: 100%;
+    }
+
+    .user-name {
+      font-size: clamp(0.72rem, 2.1vw, 0.92rem);
+      font-weight: 800;
+      line-height: 1.15;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 3px;
+      background: linear-gradient(180deg, #ffffff 0%, #ececec 50%, var(--color-gold-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .user-title {
+      font-size: clamp(0.52rem, 1.45vw, 0.68rem);
+      font-weight: 700;
+      color: var(--color-gold-primary);
+      line-height: 1.2;
+    }
+
+    .user-org {
+      font-size: clamp(0.46rem, 1.2vw, 0.58rem);
+      color: var(--color-text-subtle);
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+
+    /* --------------------------------------------------------------------------
+       5. RIGHT COLUMN: CONTACT METRICS & SOCIAL CONNECTIONS
+       -------------------------------------------------------------------------- */
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-left: 8%;
+      z-index: 3;
+    }
+
+    .location-badge {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      width: 100%;
+    }
+
+    .badge-tag {
+      font-size: clamp(0.42rem, 1.05vw, 0.52rem);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--color-accent-green);
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .contact-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin: auto 0;
+    }
+
+    .contact-entry {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .contact-label {
+      font-size: clamp(0.38rem, 0.95vw, 0.48rem);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-gold-primary);
+      font-weight: 700;
+    }
+
+    .contact-link, .contact-text {
+      font-size: clamp(0.52rem, 1.35vw, 0.68rem);
+      color: var(--color-text-white);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+      line-height: 1.35;
+      display: inline-block;
+      position: relative;
+    }
+
+    /* Expanded touch targets for contact links */
+    .contact-link::before {
+      content: "";
+      position: absolute;
+      top: -6px;
+      bottom: -6px;
+      left: -6px;
+      right: -6px;
+    }
+
+    a.contact-link:hover, a.contact-link:focus-visible {
+      color: var(--color-accent-green);
+    }
+
+    /* Social icons row layout */
+    .social-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-top: auto;
+    }
+
+    .social-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: clamp(22px, 4.8vw, 30px);
+      height: clamp(22px, 4.8vw, 30px);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--color-gold-light);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    /* Mandatory min 44px tap target for accessibility */
+    .social-btn::after {
+      content: "";
+      position: absolute;
+      min-width: 44px;
+      min-height: 44px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .social-btn svg {
+      width: 52%;
+      height: 52%;
+      fill: currentColor;
+    }
+
+    .social-btn:not(.disabled):hover,
+    .social-btn:not(.disabled):focus-visible {
+      background: var(--color-accent-green);
+      color: var(--color-metallic-dark);
+      border-color: var(--color-accent-green);
+      transform: translateY(-2px);
+    }
+
+    /* Disabled social icons */
+    .social-btn.disabled {
+      color: var(--color-social-disabled);
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.04);
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    /* Keyboard navigation focus states */
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--color-focus-ring);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    /* --------------------------------------------------------------------------
+       6. ACTIONS & PRINT TRIGGER
+       -------------------------------------------------------------------------- */
+    .action-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .btn-print {
+      background: linear-gradient(135deg, var(--color-gold-primary), var(--color-gold-dark));
+      color: var(--color-metallic-dark);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 800;
+      padding: 0.8rem 2.2rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 4px 18px rgba(223, 178, 83, 0.35);
+      transition: all 0.2s ease;
+      min-height: 44px;
+      min-width: 170px;
+      justify-content: center;
+    }
+
+    .btn-print:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(223, 178, 83, 0.5);
+      background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold-primary));
+    }
+
+    .btn-print:active {
+      transform: translateY(0);
+    }
+
+    .btn-print svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .subtext {
+      font-size: 0.75rem;
+      color: var(--color-text-subtle);
+    }
+
+    /* --------------------------------------------------------------------------
+       7. PRINT STYLESHEET (Exact 85.6mm x 54mm bank card dimension print layout)
+       -------------------------------------------------------------------------- */
+    @media print {
+      @page {
+        size: 85.6mm 54mm;
+        margin: 0;
+      }
+
+      html, body {
+        background: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 85.6mm !important;
+        height: 54mm !important;
+        display: block !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Hide everything except the ID card element */
+      .app-header, .action-panel, .card-sheen, .subtext {
+        display: none !important;
+      }
+
+      .app-viewport, .card-wrapper {
+        width: 85.6mm !important;
+        height: 54mm !important;
+        max-width: none !important;
+        max-height: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        transform: none !important;
+        perspective: none !important;
+      }
+
+      .id-card {
+        width: 85.6mm !important;
+        height: 54mm !important;
+        border-radius: 3.18mm !important;
+        box-shadow: none !important;
+        transform: none !important;
+        border: 0.5pt solid var(--color-gold-primary) !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+      }
+    }
+
+    /* Respect user preference for reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .id-card {
+        transition: none !important;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport">
+    <header class="app-header">
+      <h1 class="app-title">Official Identity Card</h1>
+    </header>
+
+    <!-- Interactive Card Wrapper -->
+    <div class="card-wrapper" id="cardWrapper">
+      <main class="id-card" id="idCard" aria-label="Identity card for Islam Shokri Elsaid">
+        
+        <!-- Surface metallic light reflection sheen -->
+        <div class="card-sheen" id="cardSheen"></div>
+        <div class="accent-stripe"></div>
+
+        <!-- Left Column: Photo & Name -->
+        <section class="card-left">
+          <div class="photo-frame">
+            <img 
+              src="https://raw.githubusercontent.com/islamshokry87/card-Islam/main/card-Islam/Personal%20Photo.jpg" 
+              alt="Photo of Islam Shokri Elsaid" 
+              class="profile-photo"
+              id="profilePhoto"
+              onerror="onPhotoError(this)"
+            />
+            <div class="initials-fallback" id="initialsFallback" aria-hidden="true">IS</div>
+          </div>
+
+          <div class="personal-meta">
+            <h2 class="user-name">Islam Shokri Elsaid</h2>
+            <div class="user-title">Physics Teacher</div>
+            <div class="user-org">Almaarifa International School</div>
+          </div>
+        </section>
+
+        <!-- Right Column: Contact Details & Social Links -->
+        <section class="card-right">
+          <div class="location-badge">
+            <span class="badge-tag">Sharjah, UAE</span>
+          </div>
+
+          <div class="contact-group">
+            <!-- Phone / WhatsApp Link -->
+            <div class="contact-entry">
+              <span class="contact-label">Phone / WhatsApp</span>
+              <a href="https://wa.me/971551767553" class="contact-link" target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp">
+                0551767553
+              </a>
+            </div>
+
+            <!-- Email Link -->
+            <div class="contact-entry">
+              <span class="contact-label">Email</span>
+              <a href="mailto:Islamshokry87@gmail.com" class="contact-link" title="Send Email">
+                Islamshokry87@gmail.com
+              </a>
+            </div>
+
+            <!-- City / Location -->
+            <div class="contact-entry">
+              <span class="contact-label">Location</span>
+              <span class="contact-text">Sharjah, UAE</span>
+            </div>
+          </div>
+
+          <!-- Social Icons Row -->
+          <nav class="social-bar" aria-label="Social Profiles">
+            <!-- LinkedIn (Active) -->
+            <a 
+              href="https://www.linkedin.com/in/islam-shokri-8186191b8" 
+              class="social-btn" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label="LinkedIn Profile"
+              title="LinkedIn"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-0.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.25V10.9H6.46M7.86 6.7a1.62 1.62 0 1 0 1.63 1.62A1.63 1.63 0 0 0 7.86 6.7z"/></svg>
+            </a>
+
+            <!-- Instagram (Disabled) -->
+            <span class="social-btn disabled" aria-disabled="true" title="Instagram (Not provided)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </span>
+
+            <!-- Facebook (Active) -->
+            <a 
+              href="https://www.facebook.com/share/1CJj1ueUCp/" 
+              class="social-btn" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label="Facebook Profile"
+              title="Facebook"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"/></svg>
+            </a>
+
+            <!-- TikTok (Disabled) -->
+            <span class="social-btn disabled" aria-disabled="true" title="TikTok (Not provided)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.82.57-1.31 1.56-1.3 2.56.01.8.37 1.58.97 2.11.75.66 1.8.88 2.78.7 1.05-.18 1.98-.92 2.37-1.92.23-.58.32-1.22.31-1.85V.02z"/></svg>
+            </span>
+          </nav>
+
+        </section>
+
+      </main>
+    </div>
+
+    <!-- Actions Panel -->
+    <div class="action-panel">
+      <button class="btn-print" onclick="window.print()" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
+        </svg>
+        Print Card (True Size)
+      </button>
+      <span class="subtext">Exact ID-1 Bank Card Format (85.6mm × 54mm)</span>
+    </div>
+  </div>
+
+  <script>
+    /* --------------------------------------------------------------------------
+       8. JAVASCRIPT LOGIC (Photo Fallback & 3D Interactive Tilt Engine)
+       -------------------------------------------------------------------------- */
+    function onPhotoError(img) {
+      const fallback = document.getElementById('initialsFallback');
+      const rootRepoUrl = 'https://raw.githubusercontent.com/islamshokry87/card-Islam/main/Personal%20Photo.jpg';
+      
+      // If the nested path failed, attempt loading from repository root
+      if (!img.dataset.triedRoot) {
+        img.dataset.triedRoot = 'true';
+        img.src = rootRepoUrl;
+      } else {
+        // Show initials fallback if photo cannot be fetched
+        img.style.display = 'none';
+        if (fallback) {
+          fallback.style.display = 'flex';
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const cardWrapper = document.getElementById('cardWrapper');
+      const idCard = document.getElementById('idCard');
+      const cardSheen = document.getElementById('cardSheen');
+
+      // Honor user's reduced motion system preference
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!prefersReducedMotion && cardWrapper && idCard) {
+        cardWrapper.addEventListener('mousemove', (e) => {
+          const rect = cardWrapper.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+
+          // Calculate subtle 3D tilt angles (max +-9 deg for readability)
+          const rotateX = -((y - centerY) / centerY) * 9;
+          const rotateY = ((x - centerX) / centerX) * 9;
+
+          idCard.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`;
+
+          // Dynamically adjust surface sheen radial position
+          if (cardSheen) {
+            const sheenX = (x / rect.width) * 100;
+            const sheenY = (y / rect.height) * 100;
+            cardSheen.style.background = `radial-gradient(circle at ${sheenX}% ${sheenY}%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 65%)`;
+          }
+        });
+
+        // Smooth reset when cursor leaves the card bounding box
+        cardWrapper.addEventListener('mouseleave', () => {
+          idCard.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+          if (cardSheen) {
+            cardSheen.style.background = '';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
